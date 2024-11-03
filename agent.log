@@ -1,0 +1,177 @@
+2024-11-03 00:56:55,592 - INFO - Agent initialized with system prompt
+2024-11-03 00:56:58,609 - WARNING - Compute Engine Metadata server unavailable on attempt 1 of 3. Reason: timed out
+2024-11-03 00:57:02,538 - WARNING - Compute Engine Metadata server unavailable on attempt 2 of 3. Reason: timed out
+2024-11-03 00:57:07,415 - WARNING - Compute Engine Metadata server unavailable on attempt 3 of 3. Reason: timed out
+2024-11-03 00:57:07,415 - WARNING - Authentication failed using Compute Engine authentication due to unavailable metadata server.
+2024-11-03 00:57:07,415 - ERROR - Execute error: 
+  No API_KEY or ADC found. Please either:
+    - Set the `GOOGLE_API_KEY` environment variable.
+    - Manually pass the key with `genai.configure(api_key=my_api_key)`.
+    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.
+2024-11-03 00:57:07,434 - INFO - Agent initialized with system prompt
+2024-11-03 00:57:10,435 - WARNING - Compute Engine Metadata server unavailable on attempt 1 of 3. Reason: timed out
+2024-11-03 00:57:14,413 - WARNING - Compute Engine Metadata server unavailable on attempt 2 of 3. Reason: timed out
+2024-11-03 00:57:19,286 - WARNING - Compute Engine Metadata server unavailable on attempt 3 of 3. Reason: timed out
+2024-11-03 00:57:19,286 - WARNING - Authentication failed using Compute Engine authentication due to unavailable metadata server.
+2024-11-03 00:57:19,286 - ERROR - Execute error: 
+  No API_KEY or ADC found. Please either:
+    - Set the `GOOGLE_API_KEY` environment variable.
+    - Manually pass the key with `genai.configure(api_key=my_api_key)`.
+    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.
+2024-11-03 00:57:19,288 - INFO - Agent initialized with system prompt
+2024-11-03 00:57:22,300 - WARNING - Compute Engine Metadata server unavailable on attempt 1 of 3. Reason: timed out
+2024-11-03 00:57:26,331 - WARNING - Compute Engine Metadata server unavailable on attempt 2 of 3. Reason: timed out
+2024-11-03 00:57:31,479 - WARNING - Compute Engine Metadata server unavailable on attempt 3 of 3. Reason: timed out
+2024-11-03 00:57:31,479 - WARNING - Authentication failed using Compute Engine authentication due to unavailable metadata server.
+2024-11-03 00:57:31,479 - ERROR - Execute error: 
+  No API_KEY or ADC found. Please either:
+    - Set the `GOOGLE_API_KEY` environment variable.
+    - Manually pass the key with `genai.configure(api_key=my_api_key)`.
+    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.
+2024-11-03 00:57:31,481 - INFO - Agent initialized with system prompt
+2024-11-03 00:58:30,280 - INFO - Agent initialized with system prompt
+2024-11-03 00:58:33,282 - WARNING - Compute Engine Metadata server unavailable on attempt 1 of 3. Reason: timed out
+2024-11-03 00:58:37,261 - WARNING - Compute Engine Metadata server unavailable on attempt 2 of 3. Reason: timed out
+2024-11-03 00:58:42,375 - WARNING - Compute Engine Metadata server unavailable on attempt 3 of 3. Reason: timed out
+2024-11-03 00:58:42,375 - WARNING - Authentication failed using Compute Engine authentication due to unavailable metadata server.
+2024-11-03 00:58:42,376 - ERROR - Execute error: 
+  No API_KEY or ADC found. Please either:
+    - Set the `GOOGLE_API_KEY` environment variable.
+    - Manually pass the key with `genai.configure(api_key=my_api_key)`.
+    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.
+2024-11-03 00:58:42,376 - INFO - Agent initialized with system prompt
+2024-11-03 00:58:45,387 - WARNING - Compute Engine Metadata server unavailable on attempt 1 of 3. Reason: timed out
+2024-11-03 00:58:49,357 - WARNING - Compute Engine Metadata server unavailable on attempt 2 of 3. Reason: timed out
+2024-11-03 00:58:54,240 - WARNING - Compute Engine Metadata server unavailable on attempt 3 of 3. Reason: timed out
+2024-11-03 00:58:54,241 - WARNING - Authentication failed using Compute Engine authentication due to unavailable metadata server.
+2024-11-03 00:58:54,241 - ERROR - Execute error: 
+  No API_KEY or ADC found. Please either:
+    - Set the `GOOGLE_API_KEY` environment variable.
+    - Manually pass the key with `genai.configure(api_key=my_api_key)`.
+    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.
+2024-11-03 00:58:54,241 - INFO - Agent initialized with system prompt
+2024-11-03 00:58:57,243 - WARNING - Compute Engine Metadata server unavailable on attempt 1 of 3. Reason: timed out
+2024-11-03 00:59:01,312 - WARNING - Compute Engine Metadata server unavailable on attempt 2 of 3. Reason: timed out
+2024-11-03 00:59:06,168 - WARNING - Compute Engine Metadata server unavailable on attempt 3 of 3. Reason: timed out
+2024-11-03 00:59:06,168 - WARNING - Authentication failed using Compute Engine authentication due to unavailable metadata server.
+2024-11-03 00:59:06,168 - ERROR - Execute error: 
+  No API_KEY or ADC found. Please either:
+    - Set the `GOOGLE_API_KEY` environment variable.
+    - Manually pass the key with `genai.configure(api_key=my_api_key)`.
+    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.
+2024-11-03 00:59:06,168 - INFO - Agent initialized with system prompt
+2024-11-03 00:59:09,178 - WARNING - Compute Engine Metadata server unavailable on attempt 1 of 3. Reason: timed out
+2024-11-03 00:59:13,128 - WARNING - Compute Engine Metadata server unavailable on attempt 2 of 3. Reason: timed out
+2024-11-03 00:59:18,331 - WARNING - Compute Engine Metadata server unavailable on attempt 3 of 3. Reason: timed out
+2024-11-03 00:59:18,331 - WARNING - Authentication failed using Compute Engine authentication due to unavailable metadata server.
+2024-11-03 00:59:18,331 - ERROR - Execute error: 
+  No API_KEY or ADC found. Please either:
+    - Set the `GOOGLE_API_KEY` environment variable.
+    - Manually pass the key with `genai.configure(api_key=my_api_key)`.
+    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.
+2024-11-03 00:59:18,331 - INFO - Agent initialized with system prompt
+2024-11-03 00:59:21,337 - WARNING - Compute Engine Metadata server unavailable on attempt 1 of 3. Reason: timed out
+2024-11-03 00:59:25,291 - WARNING - Compute Engine Metadata server unavailable on attempt 2 of 3. Reason: timed out
+2024-11-03 00:59:30,477 - WARNING - Compute Engine Metadata server unavailable on attempt 3 of 3. Reason: timed out
+2024-11-03 00:59:30,477 - WARNING - Authentication failed using Compute Engine authentication due to unavailable metadata server.
+2024-11-03 00:59:30,477 - ERROR - Execute error: 
+  No API_KEY or ADC found. Please either:
+    - Set the `GOOGLE_API_KEY` environment variable.
+    - Manually pass the key with `genai.configure(api_key=my_api_key)`.
+    - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.
+2024-11-03 00:59:30,477 - INFO - Agent initialized with system prompt
+2024-11-03 00:59:33,482 - WARNING - Compute Engine Metadata server unavailable on attempt 1 of 3. Reason: timed out
+2024-11-03 00:59:37,431 - WARNING - Compute Engine Metadata server unavailable on attempt 2 of 3. Reason: timed out
+2024-11-03 01:01:15,040 - INFO - Agent initialized with system prompt
+2024-11-03 01:01:19,590 - INFO - Successfully retrieved Wikipedia info for: quantum computing
+2024-11-03 01:01:22,154 - ERROR - Google Search API error: 400 Client Error: Bad Request for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyDAfrWJ7hoEjds3q9i19EJxKoefkssgLKg&cx=agent_o1&q=%22what+is+quantum+computing%3F%22&num=3&safe=active
+2024-11-03 01:03:07,168 - INFO - Agent initialized with system prompt
+2024-11-03 01:03:10,902 - INFO - Successfully retrieved Wikipedia info for: quantum computing
+2024-11-03 01:03:13,334 - ERROR - Google Search API error: 400 - {
+  "error": {
+    "code": 400,
+    "message": "Request contains an invalid argument.",
+    "errors": [
+      {
+        "message": "Request contains an invalid argument.",
+        "domain": "global",
+        "reason": "badRequest"
+      }
+    ],
+    "status": "INVALID_ARGUMENT"
+  }
+}
+
+2024-11-03 01:03:16,149 - WARNING - No Wikipedia results found for: "quantum computing principles"
+2024-11-03 01:03:19,224 - WARNING - No Wikipedia results found for: "quantum computing basics"
+2024-11-03 01:03:22,574 - INFO - Successfully retrieved Wikipedia info for: quantum computing
+2024-11-03 01:03:25,074 - ERROR - Blog search error: 0 for query: quantum computing
+2024-11-03 01:03:25,476 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:03:25,476 - INFO - Agent initialized with system prompt
+2024-11-03 01:03:29,051 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:03:29,051 - INFO - Agent initialized with system prompt
+2024-11-03 01:03:29,675 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:03:29,675 - INFO - Agent initialized with system prompt
+2024-11-03 01:03:30,069 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:03:30,069 - INFO - Agent initialized with system prompt
+2024-11-03 01:03:32,033 - ERROR - Google Search API error: 400 - {
+  "error": {
+    "code": 400,
+    "message": "Request contains an invalid argument.",
+    "errors": [
+      {
+        "message": "Request contains an invalid argument.",
+        "domain": "global",
+        "reason": "badRequest"
+      }
+    ],
+    "status": "INVALID_ARGUMENT"
+  }
+}
+
+2024-11-03 01:03:32,426 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:03:32,426 - INFO - Agent initialized with system prompt
+2024-11-03 01:03:32,839 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:03:32,840 - INFO - Agent initialized with system prompt
+2024-11-03 01:03:33,248 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:03:33,248 - INFO - Agent initialized with system prompt
+2024-11-03 01:03:33,591 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:03:33,591 - INFO - Agent initialized with system prompt
+2024-11-03 01:03:33,886 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:04:32,430 - INFO - Agent initialized with system prompt
+2024-11-03 01:04:36,408 - INFO - Successfully retrieved Wikipedia info for: quantum computing
+2024-11-03 01:04:38,582 - ERROR - Google Search API error: 400 - {
+  "error": {
+    "code": 400,
+    "message": "Request contains an invalid argument.",
+    "errors": [
+      {
+        "message": "Request contains an invalid argument.",
+        "domain": "global",
+        "reason": "badRequest"
+      }
+    ],
+    "status": "INVALID_ARGUMENT"
+  }
+}
+
+2024-11-03 01:04:41,423 - ERROR - Blog search error: 0 for query: quantum computing
+2024-11-03 01:04:44,513 - WARNING - No Wikipedia results found for: "quantum computing simple explanation"
+2024-11-03 01:04:48,070 - INFO - Successfully retrieved Wikipedia info for: quantum mechanics
+2024-11-03 01:04:48,489 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:04:48,489 - INFO - Agent initialized with system prompt
+2024-11-03 01:04:49,315 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:04:49,315 - INFO - Agent initialized with system prompt
+2024-11-03 01:04:49,814 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:04:49,814 - INFO - Agent initialized with system prompt
+2024-11-03 01:04:50,676 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:04:50,676 - INFO - Agent initialized with system prompt
+2024-11-03 01:04:51,077 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:04:51,077 - INFO - Agent initialized with system prompt
+2024-11-03 01:04:51,494 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:04:51,494 - INFO - Agent initialized with system prompt
+2024-11-03 01:04:51,884 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:04:51,884 - INFO - Agent initialized with system prompt
+2024-11-03 01:04:52,190 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
+2024-11-03 01:04:52,190 - INFO - Agent initialized with system prompt
+2024-11-03 01:04:52,526 - ERROR - Execute error: 429 Resource has been exhausted (e.g. check quota).
