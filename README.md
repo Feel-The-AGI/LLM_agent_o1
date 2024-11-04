@@ -422,3 +422,21 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 For more information or support, please open an issue in the repository.
+
+User Query -> Intake -> Query Planning -> Perform Action -> Analyze Result -> Cross-Validate -> Evaluate Conclude
+
+Abrev: IQ-PACE Framework Flow
+
+
+we need to switch things up a ton and i have a new framework:
+
+User Query -> Intake -> Query Planning -> Perform Action -> Analyze Result -> Cross-Validate -> Evaluate ->  Conclude
+
+
+Abrev: IQ-PACE Framework Flow
+
+it has to be more flexible, more robust more functionality and every part of this agentic framework must reflect the second thought process slow agentic thinking to reduce even hallucinations.
+take your time and work on this and update the system prompt as well, in fact the current prompt is midiocre.
+make this framework win an award
+
+it must follow the flow and please feel free to experiment and even implemnt search algorithm where you feel it needs to.
