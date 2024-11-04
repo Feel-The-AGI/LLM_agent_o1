@@ -4,3 +4,6 @@ httpx
 typing-extensions
 requests
 googletrans==3.1.0a0 
+pymilvus>=2.3.0
+sentence-transformers>=2.2.2
+torch>=2.0.0

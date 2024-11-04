@@ -1,6 +1,8 @@
-hey can you add a memory buffer and add that as context to the LLM with the User, system and agent conversation as well as a separate buffer for all previous thought processes it had
+Good now i want us to do this
+add a memory buffer and add that as context to the LLM with the User, system and agent conversation as well as a separate buffer for all previous thought processes it had
 all these should be perfectly indexed
 google gemini allows context so you can use that out of the box, i believe the curent model we are using is 10 million tokens.
 optimize it for efficiency
-try caching it using infinity in a vector data speed retrieval
-its an AI-native database built for LLM applications, providing incredibly fast hybrid search of dense vector, sparse vector, tensor (multi-vector), and full-text
+try caching it using milvus: @https://milvus.io/docs in a vector data speed retrieval
+Including the GPU functionallity
+please please pelase dont delete anything thats important take your time

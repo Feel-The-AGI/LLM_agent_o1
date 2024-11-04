@@ -26,6 +26,18 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 import ast
 from googletrans import Translator
+from pymilvus import (
+    connections,
+    Collection,
+    FieldSchema,
+    CollectionSchema,
+    DataType,
+    utility
+)
+import torch
+from sentence_transformers import SentenceTransformer
+from datetime import timedelta
+from typing import TypedDict
 
 
 system_prompt = """
@@ -636,6 +648,561 @@ class ActionManager:
                 metadata={"error": str(e)}
             )
 
+class MemoryEntry(TypedDict):
+    """Type definition for memory entries"""
+    text: str
+    embedding: List[float]
+    type: str  # 'conversation' or 'thought_process'
+    timestamp: datetime
+    metadata: Dict[str, Any]
+
+class MemoryBuffer:
+    """Advanced memory buffer using Milvus for vector storage and retrieval"""
+    
+    def __init__(self, 
+                 collection_name: str = "agent_memory",
+                 dim: int = 384,  # BERT embedding dimension
+                 device: str = 'cuda' if torch.cuda.is_available() else 'cpu'):
+        self.collection_name = collection_name
+        self.dim = dim
+        self.device = device
+        
+        # Initialize sentence transformer for embeddings
+        self.encoder = SentenceTransformer('all-MiniLM-L6-v2', device=self.device)
+        
+        # Connect to Milvus
+        self._init_milvus()
+        
+        # Initialize collections
+        self._init_collections()
+        
+        # Cache for recent entries
+        self.recent_cache = []
+        self.cache_size = 1000
+        self.cache_duration = timedelta(hours=24)
+
+    def _init_milvus(self):
+        """Initialize Milvus connection"""
+        try:
+            connections.connect(
+                alias="default",
+                host='localhost',
+                port='19530'
+            )
+        except Exception as e:
+            logging.error(f"Failed to connect to Milvus: {e}")
+            raise
+
+    def _init_collections(self):
+        """Initialize Milvus collections with GPU support"""
+        try:
+            fields = [
+                FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True),
+                FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=self.dim),
+                FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=65535),
+                FieldSchema(name="type", dtype=DataType.VARCHAR, max_length=20),
+                FieldSchema(name="timestamp", dtype=DataType.INT64),
+                FieldSchema(name="metadata", dtype=DataType.JSON)
+            ]
+            
+            schema = CollectionSchema(fields=fields)
+            
+            # Create collection if it doesn't exist
+            if not utility.has_collection(self.collection_name):
+                self.collection = Collection(name=self.collection_name, schema=schema)
+                
+                # Create index with GPU support if available
+                index_params = {
+                    "index_type": "IVF_FLAT",
+                    "metric_type": "L2",
+                    "params": {
+                        "nlist": 1024,
+                        "gpu_id": 0 if torch.cuda.is_available() else None
+                    }
+                }
+                
+                self.collection.create_index(
+                    field_name="embedding",
+                    index_params=index_params
+                )
+            else:
+                self.collection = Collection(name=self.collection_name)
+                
+            self.collection.load()
+            
+        except Exception as e:
+            logging.error(f"Failed to initialize Milvus collections: {e}")
+            raise
+
+    def add_entry(self, text: str, entry_type: str, metadata: Dict[str, Any] = None) -> bool:
+        """Add a new memory entry"""
+        try:
+            # Generate embedding
+            embedding = self.encoder.encode(text).tolist()
+            
+            # Prepare entry
+            entry = {
+                "text": text,
+                "embedding": embedding,
+                "type": entry_type,
+                "timestamp": int(datetime.now().timestamp()),
+                "metadata": metadata or {}
+            }
+            
+            # Insert into Milvus
+            self.collection.insert([
+                entry["embedding"],
+                entry["text"],
+                entry["type"],
+                entry["timestamp"],
+                json.dumps(entry["metadata"])
+            ])
+            
+            # Add to cache
+            self.recent_cache.append(entry)
+            if len(self.recent_cache) > self.cache_size:
+                self.recent_cache.pop(0)
+            
+            return True
+            
+        except Exception as e:
+            logging.error(f"Failed to add memory entry: {e}")
+            return False
+
+    def search_similar(self, query: str, limit: int = 5, threshold: float = 0.7) -> List[Dict]:
+        """Search for similar memories using GPU-accelerated search"""
+        try:
+            # Generate query embedding
+            query_embedding = self.encoder.encode(query).tolist()
+            
+            # Search parameters with GPU support
+            search_params = {
+                "metric_type": "L2",
+                "params": {
+                    "nprobe": 16,
+                    "gpu_id": 0 if torch.cuda.is_available() else None
+                }
+            }
+            
+            # Perform search
+            results = self.collection.search(
+                data=[query_embedding],
+                anns_field="embedding",
+                param=search_params,
+                limit=limit,
+                output_fields=["text", "type", "timestamp", "metadata"]
+            )
+            
+            # Process results
+            memories = []
+            for hits in results:
+                for hit in hits:
+                    if hit.distance < threshold:
+                        memories.append({
+                            "text": hit.entity.get("text"),
+                            "type": hit.entity.get("type"),
+                            "timestamp": datetime.fromtimestamp(hit.entity.get("timestamp")),
+                            "metadata": json.loads(hit.entity.get("metadata")),
+                            "relevance": 1 - (hit.distance / 2)  # Convert distance to similarity score
+                        })
+            
+            return memories
+            
+        except Exception as e:
+            logging.error(f"Failed to search memories: {e}")
+            return []
+
+    def get_recent_context(self, 
+                          max_entries: int = 10, 
+                          types: List[str] = None,
+                          hours: int = 24) -> str:
+        """Get recent context formatted for LLM"""
+        try:
+            # Filter by time
+            cutoff_time = int((datetime.now() - timedelta(hours=hours)).timestamp())
+            
+            # Query recent entries
+            expr = f"timestamp >= {cutoff_time}"
+            if types:
+                type_expr = " || ".join([f'type == "{t}"' for t in types])
+                expr = f"({expr}) && ({type_expr})"
+                
+            results = self.collection.query(
+                expr=expr,
+                output_fields=["text", "type", "timestamp", "metadata"],
+                limit=max_entries
+            )
+            
+            # Format context
+            context = []
+            for entry in sorted(results, key=lambda x: x["timestamp"]):
+                entry_type = entry["type"]
+                timestamp = datetime.fromtimestamp(entry["timestamp"]).strftime("%Y-%m-%d %H:%M:%S")
+                
+                if entry_type == "conversation":
+                    metadata = json.loads(entry["metadata"])
+                    speaker = metadata.get("speaker", "Unknown")
+                    context.append(f"{timestamp} - {speaker}: {entry['text']}")
+                else:
+                    context.append(f"{timestamp} - {entry_type}: {entry['text']}")
+            
+            return "\n".join(context)
+            
+        except Exception as e:
+            logging.error(f"Failed to get recent context: {e}")
+            return ""
+
+class ContextManager:
+    """Manages different types of context with customizable retention"""
+    
+    def __init__(self):
+        self.short_term = {
+            'recent_queries': [],
+            'active_context': {},
+            'temporary_data': {}
+        }
+        
+        self.medium_term = {
+            'conversation_summaries': [],
+            'thought_patterns': [],
+            'decision_history': []
+        }
+        
+        self.working_memory = {
+            'current_task': None,
+            'active_goals': [],
+            'context_stack': [],
+            'interim_results': {}
+        }
+        
+        # Configuration
+        self.max_short_term = 100
+        self.max_medium_term = 1000
+        self.max_stack_depth = 10
+
+    def push_context(self, context_type: str, data: Any) -> bool:
+        """Add context to appropriate storage"""
+        try:
+            if context_type == 'query':
+                self.short_term['recent_queries'].append({
+                    'data': data,
+                    'timestamp': datetime.now()
+                })
+                if len(self.short_term['recent_queries']) > self.max_short_term:
+                    self.short_term['recent_queries'].pop(0)
+                    
+            elif context_type == 'task':
+                self.working_memory['current_task'] = data
+                self.working_memory['context_stack'].append(data)
+                if len(self.working_memory['context_stack']) > self.max_stack_depth:
+                    self.working_memory['context_stack'].pop(0)
+                    
+            elif context_type == 'summary':
+                self.medium_term['conversation_summaries'].append({
+                    'summary': data,
+                    'timestamp': datetime.now()
+                })
+                if len(self.medium_term['conversation_summaries']) > self.max_medium_term:
+                    self.medium_term['conversation_summaries'].pop(0)
+            
+            return True
+        except Exception as e:
+            logging.error(f"Error pushing context: {e}")
+            return False
+
+    def get_context(self, context_type: str, limit: int = None) -> List[Dict]:
+        """Retrieve context by type"""
+        try:
+            if context_type == 'query':
+                return self.short_term['recent_queries'][-limit:] if limit else self.short_term['recent_queries']
+            elif context_type == 'task':
+                return self.working_memory['context_stack'][-limit:] if limit else self.working_memory['context_stack']
+            elif context_type == 'summary':
+                return self.medium_term['conversation_summaries'][-limit:] if limit else self.medium_term['conversation_summaries']
+            return []
+        except Exception as e:
+            logging.error(f"Error getting context: {e}")
+            return []
+
+    def clear_context(self, context_type: str = None):
+        """Clear specific or all context"""
+        try:
+            if context_type == 'short_term':
+                self.short_term = {k: [] if isinstance(v, list) else {} for k, v in self.short_term.items()}
+            elif context_type == 'medium_term':
+                self.medium_term = {k: [] for k in self.medium_term}
+            elif context_type == 'working':
+                self.working_memory = {
+                    'current_task': None,
+                    'active_goals': [],
+                    'context_stack': [],
+                    'interim_results': {}
+                }
+            else:
+                # Clear all
+                self.__init__()
+        except Exception as e:
+            logging.error(f"Error clearing context: {e}")
+
+class LongTermMemory:
+    """Persistent long-term memory storage with advanced retrieval and consolidation"""
+    
+    def __init__(self, 
+                 collection_name: str = "long_term_memory",
+                 dim: int = 384,
+                 consolidation_threshold: int = 100,
+                 device: str = 'cuda' if torch.cuda.is_available() else 'cpu'):
+        self.collection_name = collection_name
+        self.dim = dim
+        self.device = device
+        self.consolidation_threshold = consolidation_threshold
+        
+        # Initialize memory categories
+        self.categories = {
+            'core_knowledge': [],    # Fundamental learned concepts
+            'patterns': [],          # Recognized patterns and behaviors
+            'experiences': [],       # Past interactions and outcomes
+            'skills': [],           # Learned capabilities
+            'relationships': [],     # User interaction patterns
+            'meta_memory': []        # Memory about memories
+        }
+        
+        # Initialize Milvus for vector storage
+        self._init_storage()
+        
+        # Initialize consolidation queue
+        self.consolidation_queue = []
+        
+        # Memory statistics
+        self.stats = {
+            'total_memories': 0,
+            'consolidations': 0,
+            'retrievals': 0,
+            'last_consolidated': None
+        }
+
+    def _init_storage(self):
+        """Initialize Milvus collection for long-term storage"""
+        try:
+            fields = [
+                FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True),
+                FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=self.dim),
+                FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=65535),
+                FieldSchema(name="category", dtype=DataType.VARCHAR, max_length=20),
+                FieldSchema(name="importance", dtype=DataType.FLOAT),
+                FieldSchema(name="last_accessed", dtype=DataType.INT64),
+                FieldSchema(name="creation_date", dtype=DataType.INT64),
+                FieldSchema(name="metadata", dtype=DataType.JSON)
+            ]
+            
+            schema = CollectionSchema(fields=fields)
+            
+            if not utility.has_collection(self.collection_name):
+                self.collection = Collection(name=self.collection_name, schema=schema)
+                
+                # Create index with GPU support
+                index_params = {
+                    "index_type": "IVF_SQ8",  # Optimized for long-term storage
+                    "metric_type": "L2",
+                    "params": {
+                        "nlist": 2048,
+                        "gpu_id": 0 if torch.cuda.is_available() else None
+                    }
+                }
+                
+                self.collection.create_index(
+                    field_name="embedding",
+                    index_params=index_params
+                )
+            else:
+                self.collection = Collection(name=self.collection_name)
+            
+            self.collection.load()
+            
+        except Exception as e:
+            logging.error(f"Failed to initialize long-term storage: {e}")
+            raise
+
+    def store(self, content: str, category: str, importance: float = 0.5, metadata: Dict = None) -> bool:
+        """Store new memory in long-term storage"""
+        try:
+            # Generate embedding
+            embedding = self.encoder.encode(content).tolist()
+            
+            # Prepare memory entry
+            entry = {
+                "embedding": embedding,
+                "content": content,
+                "category": category,
+                "importance": importance,
+                "last_accessed": int(datetime.now().timestamp()),
+                "creation_date": int(datetime.now().timestamp()),
+                "metadata": json.dumps(metadata or {})
+            }
+            
+            # Insert into Milvus
+            self.collection.insert([
+                entry["embedding"],
+                entry["content"],
+                entry["category"],
+                entry["importance"],
+                entry["last_accessed"],
+                entry["creation_date"],
+                entry["metadata"]
+            ])
+            
+            # Add to consolidation queue
+            self.consolidation_queue.append(entry)
+            
+            # Update stats
+            self.stats['total_memories'] += 1
+            
+            # Check if consolidation is needed
+            if len(self.consolidation_queue) >= self.consolidation_threshold:
+                self._consolidate_memories()
+            
+            return True
+            
+        except Exception as e:
+            logging.error(f"Failed to store long-term memory: {e}")
+            return False
+
+    def retrieve(self, query: str, category: str = None, limit: int = 5) -> List[Dict]:
+        """Retrieve memories using semantic search"""
+        try:
+            # Generate query embedding
+            query_embedding = self.encoder.encode(query).tolist()
+            
+            # Prepare search params
+            search_params = {
+                "metric_type": "L2",
+                "params": {
+                    "nprobe": 32,
+                    "gpu_id": 0 if torch.cuda.is_available() else None
+                }
+            }
+            
+            # Add category filter if specified
+            expr = f"category == '{category}'" if category else None
+            
+            # Perform search
+            results = self.collection.search(
+                data=[query_embedding],
+                anns_field="embedding",
+                param=search_params,
+                limit=limit,
+                expr=expr,
+                output_fields=["content", "category", "importance", "last_accessed", "metadata"]
+            )
+            
+            # Update access timestamps and process results
+            memories = []
+            for hits in results:
+                for hit in hits:
+                    memory = {
+                        "content": hit.entity.get("content"),
+                        "category": hit.entity.get("category"),
+                        "importance": hit.entity.get("importance"),
+                        "last_accessed": datetime.fromtimestamp(hit.entity.get("last_accessed")),
+                        "metadata": json.loads(hit.entity.get("metadata")),
+                        "relevance": 1 - (hit.distance / 2)
+                    }
+                    memories.append(memory)
+                    
+                    # Update last accessed timestamp
+                    self.collection.update(
+                        expr=f"id == {hit.id}",
+                        data={"last_accessed": int(datetime.now().timestamp())}
+                    )
+            
+            # Update stats
+            self.stats['retrievals'] += 1
+            
+            return memories
+            
+        except Exception as e:
+            logging.error(f"Failed to retrieve memories: {e}")
+            return []
+
+    def _consolidate_memories(self):
+        """Consolidate and organize memories"""
+        try:
+            if not self.consolidation_queue:
+                return
+            
+            # Group similar memories
+            consolidated = []
+            embeddings = [m["embedding"] for m in self.consolidation_queue]
+            
+            # Use clustering to find patterns
+            clusters = self._cluster_memories(embeddings)
+            
+            for cluster in clusters:
+                memories = [self.consolidation_queue[i] for i in cluster]
+                
+                # Create consolidated memory
+                consolidated_content = self._merge_memories(memories)
+                importance = np.mean([m["importance"] for m in memories])
+                
+                # Store consolidated memory
+                self.store(
+                    content=consolidated_content,
+                    category="consolidated",
+                    importance=importance,
+                    metadata={
+                        "source_memories": len(memories),
+                        "consolidation_date": datetime.now().isoformat()
+                    }
+                )
+            
+            # Clear consolidation queue
+            self.consolidation_queue = []
+            
+            # Update stats
+            self.stats['consolidations'] += 1
+            self.stats['last_consolidated'] = datetime.now()
+            
+        except Exception as e:
+            logging.error(f"Memory consolidation failed: {e}")
+
+    def _cluster_memories(self, embeddings: List[List[float]], threshold: float = 0.7) -> List[List[int]]:
+        """Cluster similar memories together"""
+        clusters = []
+        used = set()
+        
+        for i, emb1 in enumerate(embeddings):
+            if i in used:
+                continue
+                
+            cluster = [i]
+            used.add(i)
+            
+            for j, emb2 in enumerate(embeddings):
+                if j in used:
+                    continue
+                    
+                similarity = 1 - np.linalg.norm(np.array(emb1) - np.array(emb2))
+                if similarity >= threshold:
+                    cluster.append(j)
+                    used.add(j)
+            
+            clusters.append(cluster)
+        
+        return clusters
+
+    def _merge_memories(self, memories: List[Dict]) -> str:
+        """Merge similar memories into a consolidated form"""
+        # Use LLM to generate consolidated memory
+        content = "\n".join([m["content"] for m in memories])
+        prompt = f"Consolidate these related memories into a single coherent memory:\n{content}"
+        
+        try:
+            response = self.model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            logging.error(f"Memory merging failed: {e}")
+            return content
+
 class IQPACEAgent:
     """
     Advanced cognitive agent implementing the IQ-PACE framework for structured reasoning.
@@ -653,10 +1220,42 @@ class IQPACEAgent:
         self.model = genai.GenerativeModel("gemini-1.5-pro-latest")
         self.current_context = {}
         
+        # Initialize memory buffer
+        self.memory = MemoryBuffer()
+        
+        self.context_manager = ContextManager()
+        
+        self.long_term_memory = LongTermMemory()
+        
     def process_query(self, query: str) -> str:
         """Main processing loop implementing IQ-PACE framework with verbose output"""
         try:
             print("\n=== IQ-PACE Framework Execution ===\n")
+            
+            # Store query context
+            self.context_manager.push_context('query', query)
+            
+            # Get relevant context for processing
+            recent_queries = self.context_manager.get_context('query', limit=5)
+            current_task = self.context_manager.get_context('task')
+            
+            # Add to working memory
+            self.context_manager.push_context('task', {
+                'query': query,
+                'timestamp': datetime.now(),
+                'type': 'user_query'
+            })
+            
+            # Retrieve relevant long-term memories
+            relevant_memories = self.long_term_memory.retrieve(query, limit=3)
+            
+            # Add memories to context
+            memory_context = "\nRelevant Past Knowledge:\n"
+            for memory in relevant_memories:
+                memory_context += f"- {memory['content']} (Relevance: {memory['relevance']:.2f})\n"
+            
+            # Include in processing context
+            context += memory_context
             
             # 1. Intake
             print("🔍 INTAKE PHASE")
@@ -734,12 +1333,31 @@ class IQPACEAgent:
             # Update conversation history
             self._update_history(query, conclusion)
             
+            # Store summary after processing
+            self.context_manager.push_context('summary', {
+                'query': query,
+                'response': conclusion,
+                'confidence': validation.confidence_score
+            })
+            
+            # Store important insights in long-term memory
+            if evaluation['confidence_sufficient']:
+                self.long_term_memory.store(
+                    content=conclusion,
+                    category='experiences',
+                    importance=validation.confidence_score,
+                    metadata={
+                        'query': query,
+                        'confidence': validation.confidence_score,
+                        'timestamp': datetime.now().isoformat()
+                    }
+                )
+            
             return conclusion
             
         except Exception as e:
-            logging.error(f"Process query error: {str(e)}")
-            print(f"\n❌ ERROR: {str(e)}")
-            return f"An error occurred during query processing: {str(e)}"
+            logging.error(f"❌ Error in process_query: {e}")
+            return f"An error occurred: {str(e)}"
         finally:
             print("\n=== End of Processing ===\n")
             logging.info(f"Query processing completed: {query[:100]}...")
