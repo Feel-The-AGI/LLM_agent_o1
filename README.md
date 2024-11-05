@@ -1,442 +1,582 @@
-# Agent O1: Intelligent Conversation Agent Framework
-
-[![Python Version](https://img.shields.io/badge/python-3.11.9%2B-blue)]()
-[![License](https://img.shields.io/badge/license-MIT-green)]()
+# IQ-PACE LLM Agentic Framework Implementation
 
 ## Overview
-Agent O1 is a sophisticated conversational AI agent built on top of the Google Gemini API. It implements a structured reasoning framework that breaks down complex queries into a systematic thought process using five key components: Thought, Action, Pause, Observation, and Answer (TAPA framework).
+
+This project implements an advanced cognitive agent based on the **IQ-PACE** framework, leveraging the capabilities of the **Google Gemini API**. The agent is designed for structured reasoning and information processing, providing accurate and validated responses to user queries. It features a unique architecture that integrates advanced memory management, action planning, validation, and GPU acceleration to enhance performance.
+
+The **IQ-PACE** framework stands for:
+
+- **I**ntake
+- **Q**uery Planning
+- **P**erform Action
+- **A**nalyze Result
+- **C**ross-Validate
+- **E**valuate
+- **Conclude**
+
+The agent processes queries through these stages to ensure methodical thinking, multi-source validation, uncertainty quantification, metacognitive awareness, and bias mitigation.
+
+---
 
 ## Table of Contents
+
 - [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Usage](#usage)
 - [Architecture](#architecture)
-- [Available Actions](#available-actions)
-- [Rate Limiting](#rate-limiting)
-- [Error Handling](#error-handling)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Components](#components)
+  - [IQ-PACE Framework](#iq-pace-framework)
+  - [System Prompt](#system-prompt)
+  - [Classes and Modules](#classes-and-modules)
+- [Example](#example)
 - [Logging](#logging)
-- [Examples](#examples)
+- [Environment Variables](#environment-variables)
+- [Dependencies](#dependencies)
 - [Contributing](#contributing)
+- [License](#license)
+
+---
 
 ## Features
-- 🧠 Structured reasoning framework (TAPA)
-- 🔄 Intelligent conversation loop
-- 🌐 Multiple information sources integration
-- 🔍 Cross-validation of information
-- 🌍 Translation capabilities
-- 📊 Mathematical calculations
-- 📝 News search functionality
-- 🔒 Rate limiting and error handling
-- 📝 Comprehensive logging
 
-## Prerequisites
-- Python 3.11 or higher
-- Google Gemini API key
-- NewsAPI key (for news search)
-- Google Custom Search API key and Search Engine ID (for web search)
+- Implements the IQ-PACE framework for advanced reasoning.
+- Utilizes the Google Gemini API for language generation.
+- Unique architecture with modular components for extensibility.
+- GPU acceleration for memory storage and retrieval using Milvus.
+- Action planning using A* search algorithm.
+- Validation engine with Bayesian confidence updating.
+- Advanced memory management (short-term, working, long-term).
+- Rate limiting and error handling for API calls.
+- Supports multi-source validation and cross-referencing.
+- Metacognitive awareness with continuous self-monitoring.
+- Bias mitigation through source diversity and perspective balancing.
+
+---
+
+## Architecture
+
+### Unique Architecture
+
+The agent features a unique and modular architecture that integrates several advanced components to enhance its reasoning capabilities:
+
+- **ActionManager**: Manages and executes actions with rate limiting, error handling, and GPU support.
+- **MemoryBuffer**: Uses Milvus vector database with GPU acceleration for short-term memory storage and retrieval.
+- **LongTermMemory**: Manages long-term memory storage with consolidation and retrieval using GPU-accelerated searches.
+- **ContextManager**: Handles different types of context (short-term, working, medium-term) with customizable retention.
+- **ValidationEngine**: Performs enhanced validation with Bayesian confidence updating.
+- **ActionPlanner**: Implements A* search for optimal action planning.
+- **IQPACEAgent**: The main agent that orchestrates all components according to the IQ-PACE framework.
+
+### GPU Support
+
+The agent utilizes GPU acceleration to enhance performance in the following areas:
+
+- **Memory Storage and Retrieval**: Milvus vector database operations are accelerated using GPU for faster indexing and searching.
+- **Embeddings**: SentenceTransformer models utilize GPU (if available) for efficient encoding.
+- **Action Execution**: Certain actions can leverage GPU resources for faster computation.
+
+### Framework Flow
+
+The agent processes user queries through the following stages:
+
+1. **Intake (I)**: Deep analysis of the query to understand context, domain, complexity, and potential biases.
+2. **Query Planning (Q)**: Decomposing the query into sub-queries and planning the optimal action path using A* search.
+3. **Perform Action (P)**: Executing planned actions with validation, error handling, and state maintenance.
+4. **Analyze Result (A)**: Assessing data quality, detecting anomalies, and scoring confidence.
+5. **Cross-Validate (C)**: Verifying information across multiple sources and updating confidence levels.
+6. **Evaluate (E)**: Holistically assessing results against success criteria and determining if further action is needed.
+7. **Conclude**: Synthesizing information, declaring confidence levels, and providing actionable insights.
+
+### Core Principles
+
+- **Deliberate Processing**: Implementing slow, methodical thinking for enhanced accuracy.
+- **Multi-Source Validation**: Cross-referencing all information.
+- **Uncertainty Quantification**: Explicit confidence scoring.
+- **Metacognitive Awareness**: Continuous self-monitoring.
+- **Bias Mitigation**: Identifying and correcting potential biases.
+
+---
 
 ## Installation
 
-1. Clone the repository:
+### Prerequisites
+
+- **Python 3.10 or higher**
+- [Milvus](https://milvus.io/) vector database installed and running.
+- Access to the Google Gemini API with a valid API key.
+- (Optional) NewsAPI key for news search functionality.
+- (Optional) Google Custom Search API key and CX ID for web search.
+- **GPU with CUDA support** (optional but recommended for enhanced performance).
+
+### Steps
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/yourusername/iq-pace-agent.git
+   cd iq-pace-agent
+   ```
+
+2. **Create a Virtual Environment**
+
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+3. **Install Dependencies**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Set Up Environment Variables**
+
+   Create a `.env` file in the project root directory with the following content:
+
+   ```env
+   GOOGLE_GEMINI_API_KEY=your_google_gemini_api_key
+   NEWSAPI_KEY=your_newsapi_key  # Optional
+   GOOGLE_SEARCH_API_KEY=your_google_search_api_key  # Optional
+   GOOGLE_SEARCH_CX=your_google_search_cx  # Optional
+   ```
+
+---
+
+## Usage
+
+You can test the agent by running the main script:
+
 ```bash
-git clone https://github.com/Feel-The-AGI/LLM_agent_o1.git
-cd agent-o1
+python iq_pace_agent.py
 ```
 
-2. Install required packages:
+This will execute a sample query and display the processing steps and the final result.
+
+---
+
+## Components
+
+### IQ-PACE Framework
+
+The agent implements the **IQ-PACE** framework, which structures the reasoning process into seven stages, ensuring thorough analysis and reliable responses.
+
+1. **Intake (I)**
+   - Semantic parsing of the query.
+   - Context identification.
+   - Knowledge domain classification.
+   - Complexity assessment.
+   - Success criteria definition.
+   - Bias identification.
+
+2. **Query Planning (Q)**
+   - Decomposition into sub-queries.
+   - Optimal action path planning using A* search.
+   - Resource allocation.
+   - Risk assessment.
+
+3. **Perform Action (P)**
+   - Executing actions like `wikipedia`, `calculate`, `news`, `translate`, `google_search`, etc.
+   - Pre-execution validation.
+   - Error handling.
+   - GPU-accelerated computations where applicable.
+
+4. **Analyze Result (A)**
+   - Data quality assessment.
+   - Pattern recognition.
+   - Confidence scoring.
+   - Anomaly and contradiction detection.
+
+5. **Cross-Validate (C)**
+   - Multi-source verification.
+   - Confidence updating.
+   - Contradiction resolution.
+
+6. **Evaluate (E)**
+   - Holistic assessment.
+   - Success criteria matching.
+   - Confidence verification.
+
+7. **Conclude**
+   - Synthesized response.
+   - Confidence declaration.
+   - Source attribution.
+   - Actionable insights.
+
+### System Prompt
+
+The `system_prompt` variable contains detailed instructions for the agent, outlining the framework flow, core principles, execution guidelines, and response structure. It guides the agent's behavior during processing, ensuring adherence to the IQ-PACE framework.
+
+### Classes and Modules
+
+#### ConfidenceLevel Enum
+
+Defines confidence levels for responses:
+
+```python
+class ConfidenceLevel(Enum):
+    HIGH = "high"
+    MODERATE = "moderate"
+    LOW = "low"
+    INSUFFICIENT = "insufficient"
+```
+
+#### ValidationResult Dataclass
+
+Holds validation results:
+
+```python
+@dataclass
+class ValidationResult:
+    confidence_score: float
+    validated_claims: List[str]
+    sources: List[str]
+    contradictions: List[str]
+    uncertainty_factors: List[str]
+```
+
+#### ActionResult Dataclass
+
+Holds action execution results:
+
+```python
+@dataclass
+class ActionResult:
+    success: bool
+    data: Any
+    confidence: float
+    source: str
+    timestamp: datetime
+    metadata: Dict
+```
+
+#### SearchNode Class
+
+Used for A* search in action planning:
+
+```python
+class SearchNode:
+    def __init__(self, state: str, cost: float, heuristic: float):
+        ...
+```
+
+#### ActionPlanner Class
+
+Implements A* search for action planning:
+
+```python
+class ActionPlanner:
+    def __init__(self):
+        ...
+    def add_action(self, name: str, func: callable, cost: float):
+        ...
+    def plan(self, initial_state: str, goal: str) -> List[str]:
+        ...
+```
+
+#### ValidationEngine Class
+
+Performs validation with Bayesian confidence updating:
+
+```python
+class ValidationEngine:
+    def __init__(self):
+        ...
+    def validate(self, claims: List[str], sources: List[Dict]) -> ValidationResult:
+        ...
+```
+
+#### RateLimiter Class
+
+Rate limiting utility using the token bucket algorithm:
+
+```python
+class RateLimiter:
+    def __init__(self, calls_per_second: float = 0.5):
+        ...
+    def wait(self):
+        ...
+```
+
+#### ActionManager Class
+
+Manages and executes actions with error handling and GPU support:
+
+```python
+class ActionManager:
+    def __init__(self):
+        ...
+    def register_action(self, name: str, func: callable):
+        ...
+```
+
+**Available Actions:**
+
+- `wikipedia`: Knowledge base search.
+- `calculate`: Mathematical computation.
+- `news`: Current events analysis.
+- `translate`: Language translation.
+- `google_search`: Web search.
+- `analyze`: Pattern recognition.
+
+#### MemoryEntry TypedDict
+
+Defines the structure of a memory entry:
+
+```python
+class MemoryEntry(TypedDict):
+    text: str
+    embedding: List[float]
+    type: str
+    timestamp: datetime
+    metadata: Dict[str, Any]
+```
+
+#### MemoryBuffer Class
+
+Manages short-term memory using Milvus with GPU acceleration:
+
+```python
+class MemoryBuffer:
+    def __init__(self, collection_name: str = "agent_memory", dim: int = 384, device: str = 'cuda' if torch.cuda.is_available() else 'cpu'):
+        ...
+    def add_entry(self, text: str, entry_type: str, metadata: Dict[str, Any] = None) -> bool:
+        ...
+    def search_similar(self, query: str, limit: int = 5, threshold: float = 0.7) -> List[Dict]:
+        ...
+```
+
+**GPU Support in MemoryBuffer:**
+
+- Utilizes `torch.cuda.is_available()` to check for GPU availability.
+- Embeddings generated using `SentenceTransformer` are accelerated with GPU.
+- Milvus index creation and search operations are configured for GPU acceleration.
+
+#### ContextManager Class
+
+Manages different types of context:
+
+```python
+class ContextManager:
+    def __init__(self):
+        ...
+    def push_context(self, context_type: str, data: Any) -> bool:
+        ...
+    def get_context(self, context_type: str, limit: int = None) -> List[Dict]:
+        ...
+    def clear_context(self, context_type: str = None):
+        ...
+```
+
+#### LongTermMemory Class
+
+Handles long-term memory storage and retrieval with GPU acceleration:
+
+```python
+class LongTermMemory:
+    def __init__(self, collection_name: str = "long_term_memory", dim: int = 384, consolidation_threshold: int = 100, device: str = 'cuda' if torch.cuda.is_available() else 'cpu'):
+        ...
+    def store(self, content: str, category: str, importance: float = 0.5, metadata: Dict = None) -> bool:
+        ...
+    def retrieve(self, query: str, category: str = None, limit: int = 5) -> List[Dict]:
+        ...
+```
+
+**GPU Support in LongTermMemory:**
+
+- Milvus operations are configured to use GPU for indexing and searching.
+- Embeddings for long-term memories are generated using GPU-accelerated models.
+
+#### IQPACEAgent Class
+
+Main agent implementing the IQ-PACE framework:
+
+```python
+class IQPACEAgent:
+    def __init__(self, system_prompt: str = ""):
+        ...
+    def process_query(self, query: str) -> str:
+        ...
+    def _intake_analysis(self, query: str) -> Dict:
+        ...
+    def _query_planning(self, intake_result: Dict) -> Dict:
+        ...
+    def _perform_action(self, action: str) -> ActionResult:
+        ...
+    def _analyze_results(self, results: List[ActionResult]) -> Dict:
+        ...
+    def _cross_validate(self, analysis: Dict) -> ValidationResult:
+        ...
+    def _evaluate(self, validation: ValidationResult) -> Dict:
+        ...
+    def _conclude(self, evaluation: Dict) -> str:
+        ...
+```
+
+**Unique Features of IQPACEAgent:**
+
+- Orchestrates all components according to the IQ-PACE framework.
+- Integrates memory retrieval to provide context-aware responses.
+- Uses advanced validation and error handling mechanisms.
+- Supports GPU acceleration for enhanced performance.
+
+---
+
+## Example
+
+To process a query using the agent:
+
+```python
+def query(question: str, max_iterations: int = 3) -> str:
+    agent = IQPACEAgent(system_prompt)
+    return agent.process_query(question)
+
+if __name__ == "__main__":
+    result = query("What are the latest developments in quantum computing and their potential impact on cryptography?")
+    print("\nFinal result:", result)
+```
+
+---
+
+## Logging
+
+Logging is configured to output detailed information to `agent.log`:
+
+```python
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='agent.log'
+)
+```
+
+This includes timestamps, log levels, and messages for tracing the agent's operations.
+
+---
+
+## Environment Variables
+
+Set up the following environment variables, preferably in a `.env` file:
+
+- `GOOGLE_GEMINI_API_KEY`: Your Google Gemini API key (required).
+- `NEWSAPI_KEY`: Your NewsAPI key (optional).
+- `GOOGLE_SEARCH_API_KEY`: Your Google Search API key (optional).
+- `GOOGLE_SEARCH_CX`: Your Google Search CX ID (optional).
+
+The agent will raise an error if `GOOGLE_GEMINI_API_KEY` is not found.
+
+---
+
+## Dependencies
+
+Install the required packages using `pip`:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file in the root directory with your API keys:
-```env
-GOOGLE_GEMINI_API_KEY=your_gemini_api_key
-NEWSAPI_KEY=your_newsapi_key
-GOOGLE_SEARCH_API_KEY=your_google_search_api_key
-GOOGLE_SEARCH_CX=your_search_engine_id
-```
-
-## Configuration
-
-The agent can be configured through environment variables and the system prompt. The system prompt defines the agent's behavior and available actions.
-
-### Environment Variables
-- `GOOGLE_GEMINI_API_KEY`: Required for accessing the Gemini API
-- `NEWSAPI_KEY`: Required for news search functionality
-- `GOOGLE_SEARCH_API_KEY`: Required for Google search functionality
-- `GOOGLE_SEARCH_CX`: Required for Google Custom Search Engine
-
-## Usage
-
-### Basic Usage
-```python
-from agent_o1 import query
-
-# Simple query
-result = query("What is quantum computing?")
-print(result)
-
-# Query with cross-validation
-result = query("Who is the current president of France? Please validate this information.")
-print(result)
-```
-
-### Advanced Usage
-```python
-from agent_o1 import Agent_o1
-
-# Initialize agent with custom system prompt
-agent = Agent_o1(custom_system_prompt)
-
-# Process multiple messages
-response1 = agent("What is the population of Paris?")
-response2 = agent("How has this changed over the last decade?")
-```
-
-## Architecture
-
-### Core Components
-
-1. **Agent Class (`Agent_o1`)**
-   - Manages conversation state
-   - Processes user input
-   - Coordinates with Gemini API
-   - Maintains conversation history
-
-2. **Rate Limiter (`RateLimiter`)**
-   - Controls API call frequency
-   - Prevents hitting rate limits
-   - Configurable calls per second
-
-3. **Action Handlers**
-   - `wikipedia`: Wikipedia searches
-   - `calculate`: Mathematical calculations
-   - `simon_blog_search`: Blog search functionality
-   - `cross_validate`: Information validation
-   - `news`: News article search
-   - `translate`: Text translation
-   - `google_search`: Web search
-
-### TAPA Framework Flow
-```
-User Query → Thought → Action → PAUSE → Observation → Answer
-```
-
-### TAPA Framework Analysis
-
-The TAPA framework represents a sophisticated approach to cognitive architectures in AI systems, implementing principles from cognitive science and metacognitive reasoning.
-
-#### Theoretical Components
-
-1. **Thought Phase**
-   - Implements metacognitive monitoring
-   - Analogous to prefrontal cortex executive function
-   - Formulates strategic reasoning approach
-
-2. **Action Phase**
-   - Operationalizes abstract thoughts into concrete queries
-   - Similar to working memory processes
-   - Converts plans into executable operations
-
-3. **PAUSE Phase**
-   - Innovative cognitive load management
-   - Facilitates:
-     - Information processing latency
-     - Prevention of premature conclusions
-     - Opportunity for self-correction
-     - Error detection and recovery
-
-4. **Observation Phase**
-   - Implements active sensing principles
-   - Deliberate information gathering
-   - Integration of multiple data sources
-   - Validation of collected information
-
-5. **Answer Phase**
-   - Synthesizes multiple components:
-     - Initial reasoning
-     - Action outcomes
-     - Observational data
-     - Metacognitive evaluation
-
-#### Cognitive Architecture Benefits
-
-```mermaid
-graph LR
-    A[User Query] --> B[Thought]
-    B --> C[Action]
-    C --> D[PAUSE]
-    D --> E[Observation]
-    E --> F[Answer]
-    F -.-> B
-```
-
-- **Decomposition of Reasoning**: Implements cognitive transparency through distinct phases
-- **Error Recovery**: Cyclical nature enables self-correction and refinement
-- **Metacognitive Architecture**: System can reason about its own reasoning process
-
-### Cross-Validation System
-
-The agent implements a sophisticated cross-validation mechanism that employs information theory and natural language processing techniques to ensure response reliability.
-
-#### Technical Implementation
-
-```mermaid
-graph TD
-    A[Query Input] --> B[Multi-Source Gathering]
-    B --> C[Claim Extraction]
-    C --> D[Validation Process]
-    D --> E[Confidence Scoring]
-    E --> F[Threshold Evaluation]
-    F -->|Score > Threshold| G[Return Validated Claims]
-    F -->|Score < Threshold| H[Reject Claims]
-```
-
-1. **Information Gathering**
-   - Multiple source retrieval (Wikipedia, blogs, news)
-   - Source diversification to minimize bias
-   - Parallel data collection for efficiency
-
-2. **Claim Extraction**
-   - Sentence segmentation
-   - Natural language processing
-   - Key information identification
-
-3. **Validation Algorithm**
-   ```python
-   confidence_score = (similarity_score + source_agreement) / 2
-   ```
-   Where:
-   - `similarity_score`: Sequence matching ratio (0-1)
-   - `source_agreement`: Supporting sources / total sources
-   - Final threshold: 0.2 (empirically determined)
-
-#### Scientific Foundation
-
-1. **Sequence Similarity Analysis**
-   - Uses modified Ratcliff/Obershelp pattern recognition
-   - Calculates longest contiguous matching subsequence
-   - Similarity ratio = 2M/T where:
-     - M = matches
-     - T = total elements
-
-2. **Multi-Source Validation**
-   - Information entropy principles
-   - Cross-referencing methodology
-   - Source reliability weighting
-
-3. **Confidence Scoring**
-   ```
-   For each claim:
-   - Individual source scores (0-1)
-   - Supporting evidence counter
-   - Weighted average calculation
-   - Threshold-based filtering
-   ```
-
-#### Validation Process
-
-1. **Initial Processing**
-   - Text normalization
-   - Case-insensitive comparison
-   - Noise reduction
-
-2. **Similarity Assessment**
-   ```python
-   def similarity_score(text1: str, text2: str) -> float:
-       return SequenceMatcher(None, text1.lower(), text2.lower()).ratio()
-   ```
-
-3. **Confidence Calculation**
-   - Average confidence across sources
-   - Source agreement ratio
-   - Combined weighted score
-
-4. **Threshold Mechanism**
-   - Primary validation threshold: 0.2
-   - Supporting evidence threshold: 0.3
-   - Dynamic adjustment based on:
-     - Query complexity
-     - Source reliability
-     - Information consistency
-
-#### Performance Characteristics
-
-1. **Accuracy Metrics**
-   - False positive rate < 0.1
-   - False negative rate < 0.15
-   - Confidence score correlation > 0.8
-
-2. **Validation Thresholds**
-   | Confidence Level | Score Range | Interpretation |
-   |-----------------|-------------|----------------|
-   | High | > 0.7 | Strong validation |
-   | Moderate | 0.4 - 0.7 | Partial validation |
-   | Low | 0.2 - 0.4 | Weak validation |
-   | Insufficient | < 0.2 | Validation failed |
-
-3. **Error Handling**
-   - Source unavailability compensation
-   - Contradiction resolution
-   - Uncertainty quantification
-
-#### Implementation Benefits
-
-1. **Reliability**
-   - Reduced misinformation propagation
-   - Higher confidence in responses
-   - Traceable validation process
-
-2. **Transparency**
-   - Explicit confidence scoring
-   - Source attribution
-   - Validation methodology visibility
-
-3. **Adaptability**
-   - Configurable thresholds
-   - Extensible source integration
-   - Dynamic validation parameters
-
-This cross-validation system represents a significant advancement in ensuring response reliability and accuracy in AI systems, combining information theory principles with practical implementation considerations.
-
-#### Research Implications
-
-1. **Explainable AI (XAI)**
-   - Natural explanability through step-by-step processing
-   - Auditable reasoning phases
-   - Transparent decision-making process
-
-2. **Cognitive Architecture Research**
-   - Bridges symbolic and neural approaches
-   - Implements principles from ACT-R and SOAR
-   - Provides framework for hybrid reasoning systems
-
-3. **Active Learning Integration**
-   - Adaptive information gathering
-   - Uncertainty-based exploration
-   - Dynamic knowledge acquisition
-
-#### Future Research Directions
-
-1. **Dynamic PAUSE Optimization**
-   - Adaptive pausing based on task complexity
-   - Integration with uncertainty quantification
-   - Cognitive load balancing
-
-2. **Multi-Agent Extensions**
-   - Parallel TAPA processes
-   - Collaborative reasoning frameworks
-   - Distributed cognitive architectures
-
-3. **Metacognitive Optimization**
-   - Learning optimal thought-action patterns
-   - Self-improving reasoning strategies
-   - Adaptive metacognitive control
-
-## Available Actions
-
-| Action | Description | Example Usage |
-|--------|-------------|---------------|
-| `wikipedia` | Search Wikipedia articles | `wikipedia: quantum computing` |
-| `calculate` | Perform mathematical calculations | `calculate: 4 * 7 / 3` |
-| `simon_blog_search` | Search Simon's blog | `simon_blog_search: Django` |
-| `cross_validate` | Validate information across sources | `cross_validate: France population` |
-| `news` | Search news articles | `news: climate change` |
-| `translate` | Translate text | `translate: Hello, world!|es` |
-| `google_search` | Perform web search | `google_search: Python best practices` |
-
-## Rate Limiting
-
-The `RateLimiter` class implements a token bucket algorithm to control API call frequency:
-
-```python
-rate_limiter = RateLimiter(calls_per_second=0.5)
-rate_limiter.wait()  # Called before API requests
-```
-
-## Error Handling
-
-The agent implements comprehensive error handling:
-- API errors
-- Rate limit exceptions
-- Invalid inputs
-- Network timeouts
-- Parse errors
-
-All errors are logged and gracefully handled to maintain conversation flow.
-
-## Logging
-
-Logging is configured to track:
-- API calls and responses
-- Errors and exceptions
-- Agent actions and observations
-- Performance metrics
-
-Logs are written to `agent.log` with timestamps and severity levels.
-
-## Examples
-
-### Basic Question
-```python
-result = query("What is quantum computing?")
-```
-
-### Mathematical Calculation
-```python
-result = query("Calculate the area of a circle with radius 5 units.")
-```
-
-### Translation
-```python
-result = query("How do you say 'Hello, how are you?' in Spanish?")
-```
-
-### Cross-Validation
-```python
-result = query("Who is the current president of France? Please validate this information.")
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Google Gemini API
-- NewsAPI
-- Wikipedia API
-- Simon Willison's Blog
-- Google Custom Search API
+**Key Dependencies:**
+
+- `google-generativeai`
+- `pymilvus`
+- `sentence-transformers`
+- `torch` (with CUDA support for GPU acceleration)
+- `googletrans`
+- `httpx`
+- `requests`
+- `python-dotenv`
+
+**Note:** Ensure that your system has the necessary drivers and CUDA toolkit installed for GPU support with PyTorch.
 
 ---
 
-For more information or support, please open an issue in the repository.
+## Contributing
 
-User Query -> Intake -> Query Planning -> Perform Action -> Analyze Result -> Cross-Validate -> Evaluate Conclude
+Contributions are welcome! Please fork the repository and submit a pull request.
 
-Abrev: IQ-PACE Framework Flow
+---
 
+## License
 
-we need to switch things up a ton and i have a new framework:
+This project is licensed under the MIT License.
 
-User Query -> Intake -> Query Planning -> Perform Action -> Analyze Result -> Cross-Validate -> Evaluate ->  Conclude
+---
 
+# Additional Details
 
-Abrev: IQ-PACE Framework Flow
+## Action Execution
 
-it has to be more flexible, more robust more functionality and every part of this agentic framework must reflect the second thought process slow agentic thinking to reduce even hallucinations.
-take your time and work on this and update the system prompt as well, in fact the current prompt is midiocre.
-make this framework win an award
+### Available Actions
 
-it must follow the flow and please feel free to experiment and even implemnt search algorithm where you feel it needs to.
+- **wikipedia**: `[query]` - Searches Wikipedia for the given query.
+- **calculate**: `[expression]` - Safely evaluates a mathematical expression.
+- **news**: `[query]` - Fetches recent news articles related to the query.
+- **translate**: `[text|target_language]` - Translates the text into the target language.
+- **google_search**: `[query]` - Performs a Google search for the query.
+- **analyze**: `[data]` - Performs pattern recognition on the data.
+
+### Action Protocol
+
+- **Pre-execution Validation**: Checks if the action can be executed.
+- **Resource Availability Check**: Ensures necessary resources are available.
+- **Rate Limit Compliance**: Observes API rate limits.
+- **Error Handling Preparation**: Sets up try-except blocks.
+- **Result Buffering**: Stores results for analysis.
+- **State Maintenance**: Updates internal state as needed.
+
+## Validation Engine
+
+- Implements Bayesian updating for confidence scores.
+- Considers source reliability and contradiction penalties.
+- Updates confidence levels based on new evidence.
+
+## Memory Management
+
+### MemoryBuffer
+
+- Uses Milvus for short-term memory storage with GPU acceleration.
+- Embeds text using `SentenceTransformer` with GPU support.
+- Retrieves similar memories for context-aware processing.
+
+### LongTermMemory
+
+- Stores consolidated memories for long-term retention.
+- Uses clustering algorithms to group similar memories.
+- Consolidates memories when a threshold is reached.
+- Employs GPU acceleration for embedding and searching.
+
+## Context Management
+
+- **Short-Term Memory**: Stores recent queries and active contexts.
+- **Working Memory**: Manages current tasks, goals, and interim results.
+- **Medium-Term Memory**: Holds conversation summaries and thought patterns.
+
+## Error Handling and Rate Limiting
+
+- **RateLimiter**: Ensures API calls comply with rate limits using the token bucket algorithm.
+- **Error Handling**: Catches exceptions, logs errors, and provides fallback mechanisms.
+
+## Execution Guidelines
+
+- Maintain explicit reasoning chains throughout processing.
+- Quantify uncertainty at each stage of the framework.
+- Document all assumptions made during processing.
+- Identify and mitigate potential biases.
+- Consider alternative hypotheses and viewpoints.
+- Implement progressive validation strategies.
+- Practice metacognitive monitoring for self-awareness.
+
+## Response Structure
+
+- **Validated Claims**: Present confirmed information.
+- **Confidence Scores**: Declare the confidence level explicitly.
+- **Source Attribution**: Cite sources used for information.
+- **Uncertainty Factors**: Acknowledge any uncertainties.
+- **Limitations**: Disclose limitations of the response.
+- **Alternative Perspectives**: Consider different viewpoints.
+- **Future Considerations**: Suggest areas for further exploration.
+- **Actionable Insights**: Provide practical recommendations.
+
+---
+
+By following the IQ-PACE framework and utilizing the components described, the agent aims to provide high-quality, validated, and insightful responses to user queries. The unique architecture and GPU support enhance performance and enable advanced reasoning capabilities.
