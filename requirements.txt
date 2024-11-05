@@ -7,3 +7,6 @@ googletrans==3.1.0a0
 pymilvus>=2.3.0
 sentence-transformers>=2.2.2
 torch>=2.0.0
+
+
+docker run -d --name milvus_standalone -p 19530:19530 -p 9091:9091 milvusdb/milvus:latest

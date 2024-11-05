@@ -38,6 +38,8 @@ import torch
 from sentence_transformers import SentenceTransformer
 from datetime import timedelta
 from typing import TypedDict
+from torch import nn
+import torch.nn.functional as F
 
 
 system_prompt = """
@@ -334,11 +336,12 @@ class ActionPlanner:
         return list(reversed(path))
 
 class ValidationEngine:
-    """Enhanced validation system with Bayesian updating"""
+    """Enhanced validation system with GPU acceleration"""
     def __init__(self):
-        self.prior_confidence = 0.5
-        self.min_threshold = 0.2
-        self.support_threshold = 0.3
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.prior_confidence = torch.tensor(0.5).to(self.device)
+        self.min_threshold = torch.tensor(0.2).to(self.device)
+        self.support_threshold = torch.tensor(0.3).to(self.device)
 
     def validate(self, claims: List[str], sources: List[Dict]) -> ValidationResult:
         validated_claims = []
@@ -361,27 +364,36 @@ class ValidationEngine:
         )
 
     def _calculate_confidence(self, claim: str, sources: List[Dict]) -> float:
+        # Move calculations to GPU
         scores = []
         for source in sources:
-            similarity = SequenceMatcher(None, claim.lower(), source["content"].lower()).ratio()
-            scores.append(similarity)
+            # Convert strings to tensors for GPU computation
+            claim_tensor = torch.tensor([ord(c) for c in claim.lower()]).to(self.device)
+            source_tensor = torch.tensor([ord(c) for c in source["content"].lower()]).to(self.device)
+            
+            # Calculate similarity on GPU
+            similarity = F.cosine_similarity(
+                claim_tensor.float().unsqueeze(0),
+                source_tensor.float().unsqueeze(0)
+            )
+            scores.append(similarity.item())
         
         if not scores:
             return 0.0
         
-        # Bayesian updating
+        # Bayesian updating on GPU
         confidence = self.prior_confidence
         for score in scores:
-            confidence = self._update_confidence(confidence, score)
+            confidence = self._update_confidence(confidence, torch.tensor(score).to(self.device))
         
-        return confidence
+        return confidence.cpu().item()
 
-    def _update_confidence(self, prior: float, evidence: float) -> float:
-        # Simplified Bayesian update
+    def _update_confidence(self, prior: torch.Tensor, evidence: torch.Tensor) -> torch.Tensor:
+        # Bayesian update on GPU
         likelihood = evidence
         normalization = (likelihood * prior + (1 - likelihood) * (1 - prior))
         if normalization == 0:
-            return 0.0
+            return torch.tensor(0.0).to(self.device)
         return (likelihood * prior) / normalization
 
     def _aggregate_confidence(self, claims: List[str], sources: List[Dict]) -> float:
